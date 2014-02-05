@@ -2,10 +2,8 @@
 /**
  * Created by Jakub Trancik <jakub.trancik [at] relbit [dot] com>.
  * Date: 1/23/14
- * Time: 2:45 PM
- * TODO: testing, verifypeer
  *
- * NOTES: 202 nie je v dokumentacii ako response code, nie je tam upozornenie ze vytvaranie appky trva aj ~30 sekund
+ * TODO: testing
  */
 
 class HttpError401Exception extends Exception
@@ -89,12 +87,29 @@ class Evia {
     private $email;
     private $password;
     private $baseurl;
+    private $verify;
 
-    //Constructor
+    /**
+     *  Constructor
+     */
+
     function Evia($email, $password, $baseurl){
         $this->email = $email;
         $this->password = $password;
         $this->baseurl = $baseurl;
+        $this->verify = true;
+    }
+
+    /**
+     *  Verification
+     */
+
+    function disableVerification(){
+        $this->verify = false;
+    }
+
+    function enableVerification(){
+        $this->verify = true;
     }
 
     /**
@@ -111,14 +126,12 @@ class Evia {
             CURLOPT_FORBID_REUSE => 1,
             CURLOPT_TIMEOUT => 4,
             CURLOPT_POSTFIELDS => http_build_query($data),
-            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYPEER => $this->verify,
             CURLOPT_USERPWD => $this->email.":".$this->password,
-            //CURLOPT_HEADER => true,
-            //CURLOPT_NOBODY => true
         );
 
         $ch = curl_init();
-        curl_setopt_array($ch, (/*$options + */$defaults));
+        curl_setopt_array($ch, ($defaults));
         $result = curl_exec($ch);
         $error = curl_error($ch);
         $errno = curl_errno($ch);
@@ -170,10 +183,8 @@ class Evia {
             CURLOPT_HEADER => 0,
             CURLOPT_RETURNTRANSFER => TRUE,
             CURLOPT_TIMEOUT => 4,
-            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYPEER => $this->verify,
             CURLOPT_USERPWD => $this->email.":".$this->password
-            //CURLOPT_HEADER => true,
-            //CURLOPT_NOBODY => true
         );
 
         $ch = curl_init();
@@ -230,14 +241,12 @@ class Evia {
             CURLOPT_FORBID_REUSE => 1,
             CURLOPT_TIMEOUT => 4,
             CURLOPT_POSTFIELDS => http_build_query($data),
-            CURLOPT_SSL_VERIFYPEER => false,
-            //CURLOPT_HEADER => true,
-            //CURLOPT_NOBODY => true,
+            CURLOPT_SSL_VERIFYPEER => $this->verify,
             CURLOPT_USERPWD => $this->email.":".$this->password
         );
 
         $ch = curl_init();
-        curl_setopt_array($ch, (/*$options + */$defaults));
+        curl_setopt_array($ch, ($defaults));
         $result = curl_exec($ch);
         $error = curl_error($ch);
         $errno = curl_errno($ch);
@@ -291,14 +300,14 @@ class Evia {
             CURLOPT_FORBID_REUSE => 1,
             CURLOPT_TIMEOUT => 4,
             CURLOPT_POSTFIELDS => http_build_query($data),
-            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYPEER => $this->verify,
             CURLOPT_HEADER => true,
             CURLOPT_NOBODY => true,
             CURLOPT_USERPWD => $this->email.":".$this->password
         );
 
         $ch = curl_init();
-        curl_setopt_array($ch, (/*$options + */$defaults));
+        curl_setopt_array($ch, ($defaults));
         $result = curl_exec($ch);
         $error = curl_error($ch);
         $errno = curl_errno($ch);
@@ -364,8 +373,6 @@ class Evia {
         }
 
         $result = $this->get($url, $tmp);
-        echo "getApps: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -373,9 +380,6 @@ class Evia {
     function getApp($id){
         $tmp = array();
         $result = $this->get("apps/".$id, $tmp);
-
-        echo "getApp: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -385,8 +389,6 @@ class Evia {
             "app[name]"=>$name
         );
         $result = $this->post("apps", $data);
-        echo "addApp: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -397,9 +399,6 @@ class Evia {
         );
         $result = $this->put("apps/".$id, $data);
 
-        echo "renameApp: " ;
-        echo var_dump($result) . "\n";
-
         return $result;
     }
 
@@ -408,9 +407,6 @@ class Evia {
             "app[name]"=>$name
         );
         $result = $this->delete("apps/".$id,$data);
-
-        echo "deleteApp: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -426,9 +422,6 @@ class Evia {
             "db[password]"=>$password
         );
         $result = $this->post("apps/" . $appID . "/databases", $data);
-
-        echo "addDatabase: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -449,10 +442,7 @@ class Evia {
                 $url = $url . "&term[" . $key . "]=" . $value;
             }
         }
-        $result = $this->get(urlencode($url), $tmp);
-
-        echo "getDatabases: " ;
-        echo var_dump($result) . "\n";
+        $result = $this->get($url, $tmp);
 
         return $result;
     }
@@ -460,9 +450,6 @@ class Evia {
     function getDatabase($appID, $databaseID){
         $tmp = array();
         $result = $this->get("apps/" . $appID . "/databases/" . $databaseID, $tmp);
-
-        echo "getDatabase: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -473,18 +460,12 @@ class Evia {
         );
         $result = $this->put("apps/" . $appID . "/databases/" . $databaseID, $data);
 
-        echo "updateDbPassword: " ;
-        echo var_dump($result) . "\n";
-
         return $result;
     }
 
     function deleteDatabase($appID, $databaseID){
         $data = array( );
         $result = $this->delete("apps/" . $appID . "/databases/" . $databaseID,$data);
-
-        echo "deleteDatabase: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -500,9 +481,6 @@ class Evia {
             "ssl[data]"=>$certificate
         );
         $result = $this->post("ssl_certificates", $data);
-
-        echo "addSSLCertificate: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -524,10 +502,7 @@ class Evia {
                 $url = $url . "&term[" . $key . "]=" . $value;
             }
         }
-        $result = $this->get(urlencode($url), $tmp);
-
-        echo "getSSLCertificates: " ;
-        echo var_dump($result) . "\n";
+        $result = $this->get($url, $tmp);
 
         return $result;
     }
@@ -535,9 +510,6 @@ class Evia {
     function getSSLCertificate($certificateID){
         $tmp = array();
         $result = $this->get("ssl_certificates/" . $certificateID, $tmp);
-
-        echo "getSSLCertificate: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -549,19 +521,12 @@ class Evia {
             "ssl[data]"=>$certificate
         );
         $result = $this->put("ssl_certificates", $data);
-
-        echo "addSSLCertificate: " ;
-        echo var_dump($result) . "\n";
-
         return $result;
     }
 
     function deleteSSLCertificate($certificateID){
         $data = array( );
         $result = $this->delete("ssl_certificates/" . $certificateID,$data);
-
-        echo "deleteSSLCertificate: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -576,9 +541,6 @@ class Evia {
             "domain[managed] "=>$managed
         );
         $result = $this->post("apps/" . $appID . "/domains", $data);
-
-        echo "addDomain: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -601,10 +563,7 @@ class Evia {
             }
         }
 
-        $result = $this->get(urlencode($url), $tmp);
-
-        echo "getDomains: " ;
-        echo var_dump($result) . "\n";
+        $result = $this->get($url, $tmp);
 
         return $result;
     }
@@ -613,18 +572,12 @@ class Evia {
         $tmp = array();
         $result = $this->get("apps/" . $appID . "/domains/" . $domainID, $tmp);
 
-        echo "getDomain: " ;
-        echo var_dump($result) . "\n";
-
         return $result;
     }
 
     function assignSSLCertificate($appID, $domainID, $certificateID){
         $tmp = array();
         $result = $this->get("apps/" . $appID . "/domains/" . $domainID . "/ssl_certificate/" . $certificateID, $tmp);
-
-        echo "assignSSLCertificate: " ;
-        echo var_dump($result) . "\n";
 
         return $result;
     }
@@ -633,9 +586,6 @@ class Evia {
         $tmp = array();
         $result = $this->get("apps/" . $appID . "/domains/" . $domainID . "/flush", $tmp);
 
-        echo "flushVarnishCache: " ;
-        echo var_dump($result) . "\n";
-
         return $result;
     }
 
@@ -643,11 +593,68 @@ class Evia {
         $data = array( );
         $result = $this->delete("apps/" . $appID . "/domains/" . $domainID,$data);
 
-        echo "deleteDomain: " ;
-        echo var_dump($result) . "\n";
+        return $result;
+    }
+
+    /**
+     *  DNS
+     */
+
+    function addDNS($appID, $domainID, $DNSname, $DNSttl, $DNSrtype, $DNSdata){
+        $data = array(
+            "records[0][name]" => 	$DNSname,
+            "records[0][ttl]" => 	$DNSttl,
+            "records[0][rtype]" =>	$DNSrtype,
+            "records[0][data]" =>	$DNSdata
+        );
+
+        $result = $this->post("apps/" . $appID . "/domains/" . $domainID . "/records", $data);
 
         return $result;
     }
+
+    function getDNS( $domainID, $appID, $limit = 0, $offset = 0, $filter = array()){
+        $tmp = array();
+        $url = "apps/" . $appID . "/domains/" . $domainID . "/records";
+
+        if ($limit > 0) {
+            $url = $url . "?limit=" . $limit;
+        } else {
+            $url = $url . "?";
+        }
+
+        $url = $url . "&offset=" . $offset;
+
+        if (!empty($filter)) {
+            foreach ($filter as $key => $value) {
+                $url = $url . "&term[" . $key . "]=" . $value;
+            }
+        }
+
+        $result = $this->get($url, $tmp);
+
+        return $result;
+    }
+
+    function updateDNS($domainID, $appID, $DNSID,  $DNSname, $DNSttl, $DNSrtype, $DNSdata){
+        $data = array(
+            "records[0][name]" => 	$DNSname,
+            "records[0][ttl]" => 	$DNSttl,
+            "records[0][rtype]" =>	$DNSrtype,
+            "records[0][data]" =>	$DNSdata
+        );
+        $result = $this->put("apps/" . $appID . "/domains/" . $domainID . "/records/" . $DNSID, $data);
+
+        return $result;
+    }
+
+    function deleteDNS($appID, $domainID, $DNSID){
+        $data = array( );
+        $result = $this->delete("apps/" . $appID . "/domains/" . $domainID . "/records/" . $DNSID,$data);
+
+        return $result;
+    }
+
 
     /**
      *  ADDONS
@@ -671,48 +678,10 @@ class Evia {
             }
         }
 
-        $result = $this->get(urlencode($url), $tmp);
-
-        echo "getAddons: " ;
-        echo var_dump($result) . "\n";
+        $result = $this->get($url, $tmp);
 
         return $result;
     }
 }
 
-$eviaSDK = new Evia("api101@prg0.relbitapp.com","c3eb7c91fd","https://api.prg0.relbitapp.com");
 
-//apps
-
-//$eviaSDK->getApps(0,0,array("name"=>"3"));
-//$eviaSDK->getApps(0,0,array("name"=>"0"));
-
-//echo "GAHOHFAIHPHIFAHIPAFPIHAFIHPHIPAFHIPFIHPA \n";
-
-//$eviaSDK->getApps();
-//$eviaSDK->getApp("186");
-//$eviaSDK->addApp("evia4");
-
-
-//$eviaSDK->renameApp("185","evia2");
-//$eviaSDK->deleteApp("204","evia0");
-
-//databases
-
-//$eviaSDK->addDatabase("186","evia2db2","609","secretpass");
-//$eviaSDK->getDatabases("186");
-//$eviaSDK->getDatabase("186","154");
-//$eviaSDK->updateDbPassword("186","154","notsosecretpass");
-//$eviaSDK->deleteDatabase("186","155");
-
-//connection to the database
-/*
-$username = "186_evia2db";
-$password = "notsosecretpass";
-$hostname = "my1.shared.prg0.relbit.com";
-
-$dbhandle = mysql_connect($hostname, $username, $password)
-or die("Unable to connect to MySQL");
-echo "Connected to MySQL<br>";*/
-
-//SSL Certificates
