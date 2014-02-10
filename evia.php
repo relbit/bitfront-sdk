@@ -1,88 +1,206 @@
 <?php
 /**
- * Created by Jakub Trancik <jakub.trancik [at] relbit [dot] com>.
- * Date: 1/23/14
+ * PHP SDK encapsulating cURL communication with bitfront-API.
  *
+ * bitfront-SDK consists of HTTP error exceptions, PHP functions encapsulating GET,POST,PUT and DELETE cURL requests,
+ * and functions providing all the functionality provided by bitfront-API.
  * TODO: testing
+ * NOTES: assignSSLCertificate shouldn't be GET semantically both here and in API, same goes for flush varnish cache.
+ *        Get single DNS is missing from API documentation.
+ *
+ * @package bitfront-SDK
+ * @version 1.0
+ * @author Jakub Trancik <jakub.trancik [at] relbit [dot] com>
+ * @since 1.0
  */
 
+/**
+ * Custom exception class for HTTP error 401.
+ *
+ * Class extending exception, with __toString function always returning "HttpError401Exception: 401 Unauthorized\n"
+ */
 class HttpError401Exception extends Exception
 {
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct("Unauthorized", 401);
+     */
     public function __construct() {
         parent::__construct("Unauthorized", 401);
     }
-
+    /**
+     * Function returning textual interpretation of the error.
+     *
+     * Function returning textual interpretation of the error - "HttpError401Exception: 401 Unauthorized\n"
+     */
     public function __toString() {
         return __CLASS__ . ": {$this->code} {$this->message}\n";
     }
 }
 
+/**
+ * Custom exception class for HTTP error 404.
+ *
+ * Class extending exception, with __toString function always returning "HttpError404Exception: 404 Not Found\n"
+ */
 class HttpError404Exception extends Exception
 {
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct("Not Found", 404);
+     */
     public function __construct() {
         parent::__construct("Not Found", 404);
     }
 
+    /**
+     * Function returning textual interpretation of the error.
+     *
+     * Function returning textual interpretation of the error - "HttpError404Exception: 404 Not Found\n"
+     */
     public function __toString() {
         return __CLASS__ . ": {$this->code} {$this->message}\n";
     }
 }
 
+/**
+ * Custom exception class for HTTP error 422.
+ *
+ * Class extending exception, with __toString function always returning "HttpError422Exception: 422 Unprocessable Entity\n"
+ */
 class HttpError422Exception extends Exception
 {
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct("Unprocessable Entity", 422);
+     */
     public function __construct() {
         parent::__construct("Unprocessable Entity", 422);
     }
 
+    /**
+     * Function returning textual interpretation of the error.
+     *
+     * Function returning textual interpretation of the error - "HttpError422Exception: 422 Unprocessable Entity\n"
+     */
     public function __toString() {
         return __CLASS__ . ": {$this->code} {$this->message}\n";
     }
 }
 
+/**
+ * Custom exception class for HTTP error 500.
+ *
+ * Class extending exception, with __toString function always returning "HttpError500Exception: 500 Internal server error\n"
+ */
 class HttpError500Exception extends Exception
 {
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct("Internal server error", 500);
+     */
     public function __construct() {
         parent::__construct("Internal server error", 500);
     }
 
+    /**
+     * Function returning textual interpretation of the error.
+     *
+     * Function returning textual interpretation of the error - "HttpError500Exception: 500 Internal server error\n"
+     */
     public function __toString() {
         return __CLASS__ . ": {$this->code} {$this->message}\n";
     }
 }
 
+/**
+ * Custom exception class for HTTP error 503.
+ *
+ * Class extending exception, with __toString function always returning "HttpError503Exception: 503 Service Unavailable\n"
+ */
 class HttpError503Exception extends Exception
 {
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct("Service Unavailable", 503);
+     */
     public function __construct() {
         parent::__construct("Service Unavailable", 503);
     }
 
+    /**
+     * Function returning textual interpretation of the error.
+     *
+     * Function returning textual interpretation of the error - "HttpError503Exception: 503 Service Unavailable\n"
+     */
     public function __toString() {
         return __CLASS__ . ": {$this->code} {$this->message}\n";
     }
 }
 
+/**
+ * Custom exception class for cURL errors.
+ *
+ * Class extending exception, with __toString function returning "CurlErrorException: $code $message\n"
+ */
 class CurlErrorException extends Exception
 {
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct($message, $code);
+     */
     public function __construct($message, $code) {
         parent::__construct($message, $code);
     }
 
+    /**
+     * Function returning textual interpretation of the error.
+     *
+     * Function returning textual interpretation of the error - "CurlErrorException: $code $message\n"
+     */
     public function __toString() {
         return __CLASS__ . ": {$this->code} {$this->message}\n";
     }
 }
 
+/**
+ * Custom exception class for undefined errors.
+ *
+ * Class extending exception, with __toString function returning "GenericException: $code $message\n"
+ */
 class GenericException extends Exception
 {
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct($message, $code);
+     */
     public function __construct($message, $code) {
         parent::__construct($message, $code);
     }
 
+    /**
+     * Function returning textual interpretation of the error.
+     *
+     * Function returning textual interpretation of the error - "GenericException: $code $message\n"
+     */
     public function __toString() {
         return __CLASS__ . ": {$this->code} {$this->message}\n";
     }
 }
 
+/**
+ * Class containing all functionality of bitfront-SDK.
+ *
+ * Evia class consists PHP functions encapsulating GET,POST,PUT and DELETE cURL requests,
+ * and functions encapsulating all the functionality provided by bitfront-API.
+ */
 class Evia {
     private $email;
     private $password;
@@ -90,7 +208,13 @@ class Evia {
     private $verify;
 
     /**
-     *  Constructor
+     * Constructor.
+     *
+     * Constructor that sets email, password and base url used by API calls.
+     *
+     * @param string $email
+     * @param string $password
+     * @param string $baseurl
      */
 
     function Evia($email, $password, $baseurl){
@@ -101,21 +225,42 @@ class Evia {
     }
 
     /**
-     *  Verification
+     * Function used to disable certificate verification.
+     *
+     * Function sets private variable verify to false (default is true), effectively disabling certificate verification in cURL requests.
+     *
      */
 
     function disableVerification(){
         $this->verify = false;
     }
 
+    /**
+     * Function used to enable certificate verification.
+     *
+     * Function sets private variable verify to true (default is true), effectively enabling certificate verification in cURL requests.
+     */
     function enableVerification(){
         $this->verify = true;
     }
 
     /**
-    *  REST
-    */
-
+     * Function encapsulating cURL POST request.
+     *
+     * Function POSTs $data to $baseurl/$url and either returns curl_exec() return value,
+     * or throws corresponding exception on failure.
+     *
+     * @param string $url complement of $baseurl containing exact resource location
+     * @param string $data data that will be POSTed to $baseurl/$url
+     * @return string Returns curl_exec() return value, or throws an exception.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     private function post($url, $data){
         $defaults = array(
             CURLOPT_POST => 1,
@@ -175,11 +320,26 @@ class Evia {
 
     }
 
-
-    private function get($url, array $get = NULL)
+    /**
+     * Function encapsulating cURL GET request.
+     *
+     * Function GETs $data from $baseurl/$url and either returns curl_exec() return value,
+     * or throws corresponding exception on failure.
+     *
+     * @param string $url complement of $baseurl containing exact resource location
+     * @return string Returns curl_exec() return value, or throws an exception.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
+    private function get($url)
     {
         $defaults = array(
-            CURLOPT_URL => $this->baseurl."/".$url. (strpos($url, '?') === FALSE ? '?' : ''). http_build_query($get),
+            CURLOPT_URL => $this->baseurl."/".$url. (strpos($url, '?') === FALSE ? '?' : ''). http_build_query(array()),
             CURLOPT_HEADER => 0,
             CURLOPT_RETURNTRANSFER => TRUE,
             CURLOPT_TIMEOUT => 4,
@@ -231,6 +391,23 @@ class Evia {
         }
     }
 
+    /**
+     * Function encapsulating cURL PUT request.
+     *
+     * Function PUTs $data to $baseurl/$url and either returns curl_exec() return value,
+     * or throws corresponding exception on failure.
+     *
+     * @param string $url complement of $baseurl containing exact resource location
+     * @param string $data data that will be PUT to $baseurl/$url
+     * @return string Returns curl_exec() return value, or throws an exception.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     private function put($url, $data){
         $defaults = array(
             CURLOPT_CUSTOMREQUEST => "PUT",
@@ -290,7 +467,23 @@ class Evia {
 
     }
 
-    private function delete($url,$data){
+    /**
+     * Function encapsulating cURL DELETE request.
+     *
+     * Function DELETEs data from $baseurl/$url and either returns curl_exec() return value,
+     * or throws corresponding exception on failure.
+     *
+     * @param string $url complement of $baseurl containing exact resource location
+     * @return string Returns curl_exec() return value, or throws an exception.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
+    private function delete($url){
         $defaults = array(
             CURLOPT_CUSTOMREQUEST => "DELETE",
             CURLOPT_HEADER => 0,
@@ -299,8 +492,8 @@ class Evia {
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_FORBID_REUSE => 1,
             CURLOPT_TIMEOUT => 4,
-            CURLOPT_POSTFIELDS => http_build_query($data),
             CURLOPT_SSL_VERIFYPEER => $this->verify,
+            CURLOPT_POSTFIELDS => http_build_query(array()),
             CURLOPT_HEADER => true,
             CURLOPT_NOBODY => true,
             CURLOPT_USERPWD => $this->email.":".$this->password
@@ -352,9 +545,23 @@ class Evia {
     }
 
     /**
-    *  APPLICATIONS
-    */
-
+     * Returns JSON list of all apps.
+     *
+     * By default it returns all apps, results can be filtered using $limit, $offset, and $filter.
+     *
+     * @param int $limit maximum number of returned apps.
+     * @param int $offset offset of returned apps.
+     * @param array $filter array of terms(term[name]=test) which is an array of key ⇒ value pairs for filtering,
+     * response contain only resources with name containing “test”
+     * @return string By default it returns JSON list of all apps, results can be filtered using $limit, $offset, and $filter.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function getApps($limit = 0, $offset = 0, $filter = array()){
         $tmp = array();
         $url = "apps";
@@ -377,6 +584,21 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Returns JSON list of information about desired app.
+     *
+     * Returns JSON list of information about app with ID $id or throws an exception.
+     *
+     * @param int $id ID of the desired app
+     * @return string Returns JSON list of information about app with ID $id or throws an exception.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function getApp($id){
         $tmp = array();
         $result = $this->get("apps/".$id, $tmp);
@@ -384,6 +606,21 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Adds a new app.
+     *
+     * Adds a new app with name $name or throws an exception. Creating an app may take up to 30 seconds.
+     *
+     * @param string $name name of the new app
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function addApp($name){
         $data = array(
             "app[name]"=>$name
@@ -393,28 +630,85 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Updates an app.
+     *
+     * Changes app name to $newName or throws an exception.
+     *
+     * @param int $id ID of the app to update
+     * @param string $newName new name of the app
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function updateApp($id,$newName){
         $data = array(
-            "app[name]"=>$newName
+            "app[name]"=>$newName/**
+     * Updates an app.
+     *
+     * Changes app name to $newName or throws an exception.
+     *
+     * @param int $id ID of the app to update
+     * @param string $newName new name of the app
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
         );
         $result = $this->put("apps/".$id, $data);
 
         return $result;
     }
 
-    function deleteApp($id, $name){
-        $data = array(
-            "app[name]"=>$name
-        );
-        $result = $this->delete("apps/".$id,$data);
+    /**
+     * Deletes an app.
+     *
+     * Deletes an app with ID $id or throws an exception.
+     *
+     * @param int $id ID of the app to delete
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
+    function deleteApp($id){
+        $result = $this->delete("apps/".$id);
 
         return $result;
     }
 
     /**
-     *  DATABASES
+     * Adds a new database.
+     *
+     * Adds a new database with name $name, addon_id $addonID, and password $password for application with ID $id, or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param string $databaseName name of the new database
+     * @param int $addonID ID of the addon
+     * @param string $password password of the new database
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
      */
-
     function addDatabase($appID, $databaseName, $addonID, $password){
         $data = array(
             "db[name]"=>$databaseName,
@@ -426,6 +720,25 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Returns JSON list of all databases of an app.
+     *
+     * By default it returns all databases of an app with ID $appID, results can be filtered using $limit, $offset, and $filter.
+     *
+     * @param int $appID ID of the parent app
+     * @param int $limit maximum number of returned databases.
+     * @param int $offset offset of returned databases.
+     * @param array $filter array of terms(term[name]=test) which is an array of key ⇒ value pairs for filtering,
+     * response contain only resources with name containing “test”
+     * @return string By default it returns JSON list of all databases, results can be filtered using $limit, $offset, and $filter.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function getDatabases($appID, $limit = 0, $offset = 0, $filter = array()){
         $tmp = array();
         $url = "apps/" . $appID . "/databases";
@@ -447,6 +760,22 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Returns JSON list of information about desired database.
+     *
+     * Returns JSON list of information about database with ID $databaseID of an app with ID $appID, or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param int $databaseID ID of the desired database
+     * @return string Returns JSON list of information about database with ID $id or throws an exception.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function getDatabase($appID, $databaseID){
         $tmp = array();
         $result = $this->get("apps/" . $appID . "/databases/" . $databaseID, $tmp);
@@ -454,6 +783,23 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Updates a database.
+     *
+     * Changes database password to $newPassword, or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param int $databaseID ID of the desired database
+     * @param string $newPassword new password of the database
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function updateDatabase($appID, $databaseID, $newPassword){
         $data = array(
             "db[password]"=>$newPassword
@@ -463,6 +809,22 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Deletes a database.
+     *
+     * Deletes a database with ID $databaseID of an app with ID $appID,or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param int $databaseID ID of the database to delete
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function deleteDatabase($appID, $databaseID){
         $data = array( );
         $result = $this->delete("apps/" . $appID . "/databases/" . $databaseID,$data);
@@ -471,9 +833,22 @@ class Evia {
     }
 
     /**
-     *  SSL CERTIFICATES
+     * Adds a new SSL certificate.
+     *
+     * Adds a new SSL certificate with given parameters or throws an exception.
+     *
+     * @param string $name name of the new SSL certificate
+     * @param string $key new key
+     * @param string $certificate new certificate
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
      */
-
     function addSSLCertificate($name, $key, $certificate){
         $data = array(
             "ssl[name]"=>$name,
@@ -485,6 +860,24 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Returns JSON list of all SSL certificates.
+     *
+     * By default it returns all SSL certificates, results can be filtered using $limit, $offset, and $filter.
+     *
+     * @param int $limit maximum number of returned SSL certificates.
+     * @param int $offset offset of returned SSL certificates.
+     * @param array $filter array of terms(term[name]=test) which is an array of key ⇒ value pairs for filtering,
+     * response contain only resources with name containing “test”
+     * @return string By default it returns JSON list of all SSL certificates, results can be filtered using $limit, $offset, and $filter.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function getSSLCertificates($limit = 0, $offset = 0, $filter = array()){
         $tmp = array();
         $url = "ssl_certificates";
@@ -507,6 +900,21 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Returns JSON list of information about desired SSL certificate.
+     *
+     * Returns JSON list of information about SSL certificate with ID $certificateID or throws an exception.
+     *
+     * @param int $certificateID ID of the desired SSL certificate
+     * @return string Returns JSON list of information about SSL certificate with ID $certificateID or throws an exception.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function getSSLCertificate($certificateID){
         $tmp = array();
         $result = $this->get("ssl_certificates/" . $certificateID, $tmp);
@@ -514,6 +922,23 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Updates a SSL certificate.
+     *
+     * Changes SSL certificate name to $name, key to $key, and certificate to $certificate, or throws an exception.
+     *
+     * @param string $name new name of the SSL certificate
+     * @param string $key new key of the SSL certificate
+     * @param string $certificate new certificate of the SSL certificate
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function updateSSLCertificate($name, $key, $certificate){
         $data = array(
             "ssl[name]"=>$name,
@@ -524,6 +949,21 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Deletes a SSL certificate.
+     *
+     * Deletes a SSL certificate with ID $certificateID or throws an exception.
+     *
+     * @param int $certificateID ID of the SSL certificate to delete
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function deleteSSLCertificate($certificateID){
         $data = array( );
         $result = $this->delete("ssl_certificates/" . $certificateID,$data);
@@ -532,9 +972,22 @@ class Evia {
     }
 
     /**
-     *  DOMAINS
+     * Adds a new domain.
+     *
+     * Adds a new domain with name $domainName and managed set to $managed, for app with ID $appID, or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param string $domainName name of the new domain
+     * @param string $managed managed parameter of the new domain
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
      */
-
     function addDomain($appID, $domainName, $managed){
         $data = array(
             "domain[name]"=>$domainName,
@@ -545,6 +998,25 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Returns JSON list of all domains of an app.
+     *
+     * By default it returns all domains of an app with ID $appID, results can be filtered using $limit, $offset, and $filter.
+     *
+     * @param int $appID ID of the parent app
+     * @param int $limit maximum number of returned domains.
+     * @param int $offset offset of returned domains.
+     * @param array $filter array of terms(term[name]=test) which is an array of key ⇒ value pairs for filtering,
+     * response contain only resources with name containing “test”
+     * @return string By default it returns JSON list of all domains, results can be filtered using $limit, $offset, and $filter.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function getDomains($appID, $limit = 0, $offset = 0, $filter = array()){
         $tmp = array();
         $url = "apps/" . $appID . "/domains";
@@ -568,6 +1040,22 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Returns JSON list of information about desired domain.
+     *
+     * Returns JSON list of information about domain with ID $domainID of an app with ID $appID, or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param int $domainID ID of the desired domain
+     * @return string Returns JSON list of information about domain with ID $domainID or throws an exception.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function getDomain($appID, $domainID){
         $tmp = array();
         $result = $this->get("apps/" . $appID . "/domains/" . $domainID, $tmp);
@@ -575,6 +1063,23 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Assigns an SSL certificate to a domain.
+     *
+     * Assigns an SSL certificate with ID $certificateID to a domain with ID $domainID of an app with ID $appID, or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param string $domainID ID of the domain
+     * @param string $certificateID ID of the certificate
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function assignSSLCertificate($appID, $domainID, $certificateID){
         $tmp = array();
         $result = $this->get("apps/" . $appID . "/domains/" . $domainID . "/ssl_certificate/" . $certificateID, $tmp);
@@ -582,6 +1087,22 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Flushes the varnish cache of a domain.
+     *
+     * Flushes the varnish cache of a domain with ID $domainID of an app with ID $appID, or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param string $domainID ID of the domain
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function flushVarnishCache($appID, $domainID){
         $tmp = array();
         $result = $this->get("apps/" . $appID . "/domains/" . $domainID . "/flush", $tmp);
@@ -589,6 +1110,22 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Deletes a domain.
+     *
+     * Deletes a domain with ID $domainID of an app with ID $appID, or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param string $domainID ID of the domain
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function deleteDomain($appID, $domainID){
         $data = array( );
         $result = $this->delete("apps/" . $appID . "/domains/" . $domainID,$data);
@@ -597,9 +1134,25 @@ class Evia {
     }
 
     /**
-     *  DNS
+     * Adds a new DNS.
+     *
+     * Adds a new DNS (with attributes set to function arguments) to a domain with ID $domainID of an app with ID $appID, or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param int $domainID name of the new domain
+     * @param string $DNSname name for host
+     * @param string $DNSttl time to live
+     * @param string $DNSrtype record type [A, AAAA, MX, CNAME, NS, TXT, SRV]
+     * @param string $DNSdata record data
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
      */
-
     function addDNS($appID, $domainID, $DNSname, $DNSttl, $DNSrtype, $DNSdata){
         $data = array(
             "records[0][name]" => 	$DNSname,
@@ -613,7 +1166,27 @@ class Evia {
         return $result;
     }
 
-    function getDNS( $domainID, $appID, $limit = 0, $offset = 0, $filter = array()){
+    /**
+     * Returns JSON list of information about desired DNS.
+     *
+     * Returns JSON list of information about DNS of a domain with ID $domainID of an app with ID $appID, or throws an exception.
+     *
+     * @param int $domainID ID of the parent domain
+     * @param int $appID ID of the parent app
+     * @param int $limit maximum number of returned apps.
+     * @param int $offset offset of returned apps.
+     * @param array $filter array of terms(term[name]=test) which is an array of key ⇒ value pairs for filtering,
+     * response contain only resources with name containing “test”
+     * @return string Returns JSON list of information about desired DNS, or throws an exception.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
+    function getDNSs( $domainID, $appID, $limit = 0, $offset = 0, $filter = array()){
         $tmp = array();
         $url = "apps/" . $appID . "/domains/" . $domainID . "/records";
 
@@ -636,6 +1209,53 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Returns JSON list of information about desired DNS.
+     *
+     * Returns JSON list of information about DNS of a domain with ID $domainID of an app with ID $appID, or throws an exception.
+     *
+     * @param int $domainID ID of the parent domain
+     * @param int $appID ID of the parent app
+     * @param int $DNSID ID of the desired DNS
+     * @return string Returns JSON list of information about desired DNS, or throws an exception.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
+    function getDNS( $domainID, $appID, $DNSID){
+        $tmp = array();
+        $url = "apps/" . $appID . "/domains/" . $domainID . "/records/" . $DNSID;
+
+        $result = $this->get($url, $tmp);
+
+        return $result;
+    }
+
+    /**
+     * Updates a DNS.
+     *
+     * Changes DNS name, ttl, rtype, and data to new values, or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param int $domainID name of the parent domain
+     * @param int $DNSID name of the DNS
+     * @param string $DNSname name for host
+     * @param string $DNSttl time to live
+     * @param string $DNSrtype record type [A, AAAA, MX, CNAME, NS, TXT, SRV]
+     * @param string $DNSdata record data
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function updateDNS($domainID, $appID, $DNSID,  $DNSname, $DNSttl, $DNSrtype, $DNSdata){
         $data = array(
             "records[0][name]" => 	$DNSname,
@@ -648,6 +1268,23 @@ class Evia {
         return $result;
     }
 
+    /**
+     * Deletes a DNS.
+     *
+     * Deletes a DNS with ID $DNSID of a domain with ID $domainID of an app with ID $appID, or throws an exception.
+     *
+     * @param int $appID ID of the parent app
+     * @param string $domainID ID of the domain
+     * @param int $DNSID name of the DNS
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
     function deleteDNS($appID, $domainID, $DNSID){
         $data = array( );
         $result = $this->delete("apps/" . $appID . "/domains/" . $domainID . "/records/" . $DNSID,$data);
@@ -655,11 +1292,24 @@ class Evia {
         return $result;
     }
 
-
     /**
-     *  ADDONS
+     * Returns JSON list of all addons.
+     *
+     * By default it returns all addons, results can be filtered using $limit, $offset, and $filter.
+     *
+     * @param int $limit maximum number of returned addons.
+     * @param int $offset offset of returned addons.
+     * @param array $filter array of terms(term[name]=test) which is an array of key ⇒ value pairs for filtering,
+     * response contain only resources with name containing “test”
+     * @return string By default it returns JSON list of all addons, results can be filtered using $limit, $offset, and $filter.
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
      */
-
     function getAddons($limit = 0, $offset = 0, $filter = array()){
         $tmp = array();
         $url = "addons";
