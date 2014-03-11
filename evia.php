@@ -269,7 +269,7 @@ class Evia {
             CURLOPT_FRESH_CONNECT => 1,
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_FORBID_REUSE => 1,
-            CURLOPT_TIMEOUT => 4,
+            CURLOPT_TIMEOUT => 40,
             CURLOPT_POSTFIELDS => http_build_query($data),
             CURLOPT_SSL_VERIFYPEER => $this->verify,
             CURLOPT_USERPWD => $this->email.":".$this->password,
@@ -416,7 +416,7 @@ class Evia {
             CURLOPT_FRESH_CONNECT => 1,
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_FORBID_REUSE => 1,
-            CURLOPT_TIMEOUT => 4,
+            CURLOPT_TIMEOUT => 40,
             CURLOPT_POSTFIELDS => http_build_query($data),
             CURLOPT_SSL_VERIFYPEER => $this->verify,
             CURLOPT_USERPWD => $this->email.":".$this->password
@@ -491,7 +491,7 @@ class Evia {
             CURLOPT_FRESH_CONNECT => 1,
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_FORBID_REUSE => 1,
-            CURLOPT_TIMEOUT => 4,
+            CURLOPT_TIMEOUT => 40,
             CURLOPT_SSL_VERIFYPEER => $this->verify,
             CURLOPT_POSTFIELDS => http_build_query(array()),
             CURLOPT_HEADER => true,
@@ -939,13 +939,13 @@ class Evia {
      * @throws CurlErrorException
      * @throws GenericException
      */
-    function updateSSLCertificate($name, $key, $certificate){
+    function updateSSLCertificate($certificateID, $name, $key, $certificate){
         $data = array(
             "ssl[name]"=>$name,
             "ssl[key]"=>$key,
             "ssl[data]"=>$certificate
         );
-        $result = $this->put("ssl_certificates", $data);
+        $result = $this->put("ssl_certificates/" . $certificateID, $data);
         return $result;
     }
 
@@ -991,7 +991,7 @@ class Evia {
     function addDomain($appID, $domainName, $managed){
         $data = array(
             "domain[name]"=>$domainName,
-            "domain[managed] "=>$managed
+            "domain[managed]"=>$managed
         );
         $result = $this->post("apps/" . $appID . "/domains", $data);
 
@@ -1082,7 +1082,7 @@ class Evia {
      */
     function assignSSLCertificate($appID, $domainID, $certificateID){
         $tmp = array();
-        $result = $this->get("apps/" . $appID . "/domains/" . $domainID . "/ssl_certificate/" . $certificateID, $tmp);
+        $result = $this->get("apps/" . $appID . "/domains/" . $domainID . "/ssl_certificate/" . $certificateID . "/assign", $tmp);
 
         return $result;
     }
@@ -1155,10 +1155,10 @@ class Evia {
      */
     function addDNS($appID, $domainID, $DNSname, $DNSttl, $DNSrtype, $DNSdata){
         $data = array(
-            "records[0][name]" => 	$DNSname,
-            "records[0][ttl]" => 	$DNSttl,
-            "records[0][rtype]" =>	$DNSrtype,
-            "records[0][data]" =>	$DNSdata
+            "records[0][name]" =>   $DNSname,
+            "records[0][ttl]" =>    $DNSttl,
+            "records[0][rtype]" =>  $DNSrtype,
+            "records[0][data]" =>   $DNSdata
         );
 
         $result = $this->post("apps/" . $appID . "/domains/" . $domainID . "/records", $data);
@@ -1186,7 +1186,7 @@ class Evia {
      * @throws CurlErrorException
      * @throws GenericException
      */
-    function getDNSs( $domainID, $appID, $limit = 0, $offset = 0, $filter = array()){
+    function getDNSs($appID, $domainID, $limit = 0, $offset = 0, $filter = array()){
         $tmp = array();
         $url = "apps/" . $appID . "/domains/" . $domainID . "/records";
 
@@ -1226,7 +1226,7 @@ class Evia {
      * @throws CurlErrorException
      * @throws GenericException
      */
-    function getDNS( $domainID, $appID, $DNSID){
+    function getDNS($appID, $domainID, $DNSID){
         $tmp = array();
         $url = "apps/" . $appID . "/domains/" . $domainID . "/records/" . $DNSID;
 
@@ -1256,12 +1256,12 @@ class Evia {
      * @throws CurlErrorException
      * @throws GenericException
      */
-    function updateDNS($domainID, $appID, $DNSID,  $DNSname, $DNSttl, $DNSrtype, $DNSdata){
+    function updateDNS($appID, $domainID, $DNSID,  $DNSname, $DNSttl, $DNSrtype, $DNSdata){
         $data = array(
-            "records[0][name]" => 	$DNSname,
-            "records[0][ttl]" => 	$DNSttl,
-            "records[0][rtype]" =>	$DNSrtype,
-            "records[0][data]" =>	$DNSdata
+            "records[0][name]" =>   $DNSname,
+            "records[0][ttl]" =>    $DNSttl,
+            "records[0][rtype]" =>  $DNSrtype,
+            "records[0][data]" =>   $DNSdata
         );
         $result = $this->put("apps/" . $appID . "/domains/" . $domainID . "/records/" . $DNSID, $data);
 
