@@ -14,160 +14,6 @@
  * @since 1.0
  */
 
-/**
- * Custom exception class for HTTP error 401.
- *
- * Class extending exception, with __toString function always returning "HttpError401Exception: 401 Unauthorized\n"
- */
-class HttpError401Exception extends Exception
-{
-    /**
-     * Constructor.
-     *
-     * Constructor calling parent::__construct("Unauthorized", 401);
-     */
-    public function __construct() {
-        parent::__construct("Unauthorized", 401);
-    }
-    /**
-     * Function returning textual interpretation of the error.
-     *
-     * Function returning textual interpretation of the error - "HttpError401Exception: 401 Unauthorized\n"
-     */
-    public function __toString() {
-        return __CLASS__ . ": {$this->code} {$this->message}\n";
-    }
-}
-
-/**
- * Custom exception class for HTTP error 404.
- *
- * Class extending exception, with __toString function always returning "HttpError404Exception: 404 Not Found\n"
- */
-class HttpError404Exception extends Exception
-{
-    /**
-     * Constructor.
-     *
-     * Constructor calling parent::__construct("Not Found", 404);
-     */
-    public function __construct() {
-        parent::__construct("Not Found", 404);
-    }
-
-    /**
-     * Function returning textual interpretation of the error.
-     *
-     * Function returning textual interpretation of the error - "HttpError404Exception: 404 Not Found\n"
-     */
-    public function __toString() {
-        return __CLASS__ . ": {$this->code} {$this->message}\n";
-    }
-}
-
-/**
- * Custom exception class for HTTP error 422.
- *
- * Class extending exception, with __toString function always returning "HttpError422Exception: 422 Unprocessable Entity\n"
- */
-class HttpError422Exception extends Exception
-{
-    /**
-     * Constructor.
-     *
-     * Constructor calling parent::__construct("Unprocessable Entity", 422);
-     */
-    public function __construct() {
-        parent::__construct("Unprocessable Entity", 422);
-    }
-
-    /**
-     * Function returning textual interpretation of the error.
-     *
-     * Function returning textual interpretation of the error - "HttpError422Exception: 422 Unprocessable Entity\n"
-     */
-    public function __toString() {
-        return __CLASS__ . ": {$this->code} {$this->message}\n";
-    }
-}
-
-/**
- * Custom exception class for HTTP error 500.
- *
- * Class extending exception, with __toString function always returning "HttpError500Exception: 500 Internal server error\n"
- */
-class HttpError500Exception extends Exception
-{
-    /**
-     * Constructor.
-     *
-     * Constructor calling parent::__construct("Internal server error", 500);
-     */
-    public function __construct() {
-        parent::__construct("Internal server error", 500);
-    }
-
-    /**
-     * Function returning textual interpretation of the error.
-     *
-     * Function returning textual interpretation of the error - "HttpError500Exception: 500 Internal server error\n"
-     */
-    public function __toString() {
-        return __CLASS__ . ": {$this->code} {$this->message}\n";
-    }
-}
-
-/**
- * Custom exception class for HTTP error 503.
- *
- * Class extending exception, with __toString function always returning "HttpError503Exception: 503 Service Unavailable\n"
- */
-class HttpError503Exception extends Exception
-{
-    /**
-     * Constructor.
-     *
-     * Constructor calling parent::__construct("Service Unavailable", 503);
-     */
-    public function __construct() {
-        parent::__construct("Service Unavailable", 503);
-    }
-
-    /**
-     * Function returning textual interpretation of the error.
-     *
-     * Function returning textual interpretation of the error - "HttpError503Exception: 503 Service Unavailable\n"
-     */
-    public function __toString() {
-        return __CLASS__ . ": {$this->code} {$this->message}\n";
-    }
-}
-
-/**
- * Custom exception class for cURL errors.
- *
- * Class extending exception, with __toString function returning "CurlErrorException: $code $message\n"
- */
-class CurlErrorException extends Exception
-{
-    /**
-     * Constructor.
-     *
-     * Constructor calling parent::__construct($message, $code);
-     */
-    public function __construct($message, $code) {
-        parent::__construct($message, $code);
-    }
-
-    /**
-     * Function returning textual interpretation of the error.
-     *
-     * Function returning textual interpretation of the error - "CurlErrorException: $code $message\n"
-     */
-    public function __toString() {
-        return __CLASS__ . ": {$this->code} {$this->message}\n";
-    }
-}
 
 /**
  * Custom exception class for undefined errors.
@@ -191,9 +37,112 @@ class GenericException extends Exception
      * Function returning textual interpretation of the error - "GenericException: $code $message\n"
      */
     public function __toString() {
-        return __CLASS__ . ": {$this->code} {$this->message}\n";
+        return __CLASS__ . ": {$this->code} {$this->message}" . PHP_EOL;
     }
 }
+
+/**
+ * Custom exception class for HTTP error 401.
+ *
+ * Class extending exception, with __toString function always returning "HttpError401Exception: 401 Unauthorized\n"
+ */
+class HttpError401Exception extends GenericException
+{
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct("Unauthorized", 401);
+     */
+    public function __construct() {
+        parent::__construct("Unauthorized", 401);
+    }
+}
+
+/**
+ * Custom exception class for HTTP error 404.
+ *
+ * Class extending exception, with __toString function always returning "HttpError404Exception: 404 Not Found\n"
+ */
+class HttpError404Exception extends GenericException
+{
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct("Not Found", 404);
+     */
+    public function __construct() {
+        parent::__construct("Not Found", 404);
+    }
+}
+
+/**
+ * Custom exception class for HTTP error 422.
+ *
+ * Class extending exception, with __toString function always returning "HttpError422Exception: 422 Unprocessable Entity\n"
+ */
+class HttpError422Exception extends GenericException
+{
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct("Unprocessable Entity", 422);
+     */
+    public function __construct() {
+        parent::__construct("Unprocessable Entity", 422);
+    }
+}
+
+/**
+ * Custom exception class for HTTP error 500.
+ *
+ * Class extending exception, with __toString function always returning "HttpError500Exception: 500 Internal server error\n"
+ */
+class HttpError500Exception extends GenericException
+{
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct("Internal server error", 500);
+     */
+    public function __construct() {
+        parent::__construct("Internal server error", 500);
+    }
+}
+
+/**
+ * Custom exception class for HTTP error 503.
+ *
+ * Class extending exception, with __toString function always returning "HttpError503Exception: 503 Service Unavailable\n"
+ */
+class HttpError503Exception extends GenericException
+{
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct("Service Unavailable", 503);
+     */
+    public function __construct() {
+        parent::__construct("Service Unavailable", 503);
+    }
+}
+
+/**
+ * Custom exception class for cURL errors.
+ *
+ * Class extending exception, with __toString function returning "CurlErrorException: $code $message\n"
+ */
+class CurlErrorException extends GenericException
+{
+    /**
+     * Constructor.
+     *
+     * Constructor calling parent::__construct($message, $code);
+     */
+    public function __construct($message, $code) {
+        parent::__construct($message, $code);
+    }
+}
+
 
 /**
  * Class containing all functionality of bitfront-SDK.
@@ -1334,4 +1283,195 @@ class Evia {
     }
 }
 
+/**
+ * Custom exception class for Missing argument error, used in CLI mode.
+ *
+ */
+class MissingArgumentExpetion extends GenericException
+{
 
+    public function __construct($method) {
+        parent::__construct("Missing argument for method " . $method);
+    }
+}
+
+/**
+ * Custom exception class for Missing argument error, used in CLI mode.
+ *
+ */
+class MissingCredentialsExpetion extends GenericException
+{
+
+    public function __construct() {
+        parent::__construct("Missing Api Credentials.");
+    }
+}
+
+
+/*
+ * Function do determine CLI mode usage
+ */
+function isCLI(){
+    return (php_sapi_name() === 'cli' OR defined('STDIN'));
+}
+
+
+/*
+ * Function to parse method arguments in CLI mode. Decodes array arguments passed as JSON strings.
+ */
+function parseParams($api, $funcName, $argv){
+    $reflector = new ReflectionClass($api);
+    $method = $reflector->getMethod($funcName);
+    $parameters = $method->getParameters();
+
+    $i = 0;
+    $requiredArgumentCount = 0;
+    foreach($parameters as $param){
+        if ($param->isOptional()){
+            if(is_array($param->getDefaultValue()) && (count($argv) > $i)){
+                $argv[$i] = json_decode($argv[$i], true);
+            }
+        }
+        else
+        {
+            $requiredArgumentCount++;
+        }    
+        $i++;
+    }
+
+    if(count($argv) < $requiredArgumentCount){
+        throw new MissingArgumentExpetion($funcName);    
+    }
+
+    return $argv;
+}
+
+
+/*
+ * Parse argumenets of script in CLI mode.
+ * 
+ * -h or --help for options with no value
+ * -e=value or --email=value for options with value
+ */
+function parseArguments($argv)
+{
+    // position [0] is the script's file name
+    array_shift($argv);
+    $out = array();
+    foreach($argv as $arg)
+    {
+        if(substr($arg, 0, 2) == '--')
+        {
+            $eqPos = strpos($arg, '=');
+            if($eqPos === false)
+            {
+                $key = substr($arg, 2);
+                $out[$key] = isset($out[$key]) ? $out[$key] : true;
+            }
+            else
+            {
+                $key = substr($arg, 2, $eqPos - 2);
+                $out[$key] = substr($arg, $eqPos + 1);
+            }
+            $out["params"] = array();
+        }
+        else if(substr($arg, 0, 1) == '-')
+        {
+            if(substr($arg, 2, 1) == '=')
+            {
+                $key = substr($arg, 1, 1);
+                $out[$key] = substr($arg, 3);
+            }
+            else
+            {
+                $chars = str_split(substr($arg, 1));
+                foreach($chars as $char)
+                {
+                    $key = $char;
+                    $out[$key] = isset($out[$key]) ? $out[$key] : true;
+                }
+            }
+            $out["params"] = array();
+        }
+        else
+        {
+            $out["params"][] = $arg;
+        }
+    }
+    return $out;
+}
+
+/*
+ * Method prints one formatted line of scipt options.
+ */
+function printOptionLine($short, $long, $desc){
+    fwrite(STDOUT, "\t". $short .", ". $long ."\t\t". $desc . PHP_EOL);
+}
+
+/*
+ * Method prints scripts help. -h or --help
+ */
+function printHelp(){
+    fwrite(STDOUT, "bitfront-API CLI". PHP_EOL);
+    
+    fwrite(STDOUT, "SYNTAX:". PHP_EOL);
+    fwrite(STDOUT, "\tevia.php OPTIONS METHOD [PARAMS]" . PHP_EOL);
+    
+    fwrite(STDOUT, "USAGE EXAMPLE:". PHP_EOL);
+    fwrite(STDOUT, "\tphp evia.php -e=account@prg0.relbitapp.com --password=topsecret -u=https://api.prg0.relbitapp.com getApps". PHP_EOL);
+    fwrite(STDOUT, PHP_EOL);
+    fwrite(STDOUT, "\tphp evia.php -e=account@prg0.relbitapp.com --password=topsecret -u=https://api.prg0.relbitapp.com addApp test_app". PHP_EOL);
+
+    fwrite(STDOUT, "OPTIONS:". PHP_EOL);    
+    printOptionLine("-h", "--help", "Prints this help");
+    printOptionLine("-e", "--email", "API login email");
+    printOptionLine("-p", "--password", "API password");
+    printOptionLine("-u", "--url", "API base url");
+}
+
+/*
+ * Returns value from $arguments array by $key1 or $key2.
+ */
+function getFromArguments($arguments, $key1, $key2){
+    if(isset($arguments[$key1]))
+    {
+        return $arguments[$key1];
+    }
+    else if(isset($arguments[$key2]))
+    {
+        return $arguments[$key2];
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+if(isCLI()){  
+    try
+    {
+        $arguments = parseArguments($argv);
+        
+        if(getFromArguments($arguments, "h", "help")){
+            printHelp();
+        }
+        else
+        {
+            $email = getFromArguments($arguments, "e", "email");
+            $password = getFromArguments($arguments, "p", "password");
+            $baseurl = getFromArguments($arguments, "u", "url");
+            if(!($email && $password && $baseurl)){
+                throw new MissingCredentialsExpetion(); 
+            }
+            $api = new Evia($email, $password, $baseurl);
+            $funcName = array_shift($arguments["params"]);
+            $params = parseParams($api, $funcName, $arguments["params"]);
+            
+            fwrite(STDOUT, call_user_func_array(array($api, $funcName), $params));
+        }
+    }
+    catch (Exception $e) {
+        fwrite(STDERR, 'Exception: ' . $e->getMessage() . ". Use -h for help." . PHP_EOL);
+    }
+}
