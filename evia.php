@@ -4,13 +4,13 @@
  *
  * bitfront-SDK consists of HTTP error exceptions, PHP functions encapsulating GET,POST,PUT and DELETE cURL requests,
  * and functions providing all the functionality provided by bitfront-API.
- * TODO: testing
  * NOTES: assignSSLCertificate shouldn't be GET semantically both here and in API, same goes for flush varnish cache.
  *        Get single DNS is missing from API documentation.
  *
  * @package bitfront-SDK
  * @version 1.0
  * @author Jakub Trancik <jakub.trancik [at] relbit [dot] com>
+ * @author Adam Poldauf <adam.poldauf [at] relbit [dot] com>
  * @since 1.0
  */
 
