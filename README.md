@@ -18,7 +18,7 @@ OPTIONS:
 </pre>
 
 As well as it can be used in any PHP application as a library.
-<pre>
+```php
 <?php
 	require 'evia.php';
 	
@@ -35,6 +35,6 @@ As well as it can be used in any PHP application as a library.
 
 	
 ?>
-</pre> 
+``` 
 
 For more information about API and documentation look inside evia.php and visit <a href="http://docs.eviaproject.org/eviaproject:bitfront:api">docs.eviaproject.org - bitfront - API Documentation</a>
