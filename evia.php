@@ -285,10 +285,10 @@ class Evia {
      * @throws CurlErrorException
      * @throws GenericException
      */
-    private function get($url)
+    private function get($url, $params = array())
     {
         $defaults = array(
-            CURLOPT_URL => $this->baseurl."/".$url. (strpos($url, '?') === FALSE ? '?' : ''). http_build_query(array()),
+            CURLOPT_URL => $this->baseurl."/".$url. (strpos($url, '?') === FALSE ? '?' : ''). http_build_query($params),
             CURLOPT_HEADER => 0,
             CURLOPT_RETURNTRANSFER => TRUE,
             CURLOPT_TIMEOUT => 4,
@@ -1043,6 +1043,7 @@ class Evia {
      *
      * @param int $appID ID of the parent app
      * @param string $domainID ID of the domain
+     * @param string $url url regexp
      * @return string Returns cURL response, or throws an exception
      * @throws HttpError401Exception
      * @throws HttpError404Exception
@@ -1052,8 +1053,8 @@ class Evia {
      * @throws CurlErrorException
      * @throws GenericException
      */
-    function flushVarnishCache($appID, $domainID){
-        $tmp = array();
+    function flushVarnishCache($appID, $domainID, $url = ""){
+        $tmp = array("url" => $url);
         $result = $this->get("apps/" . $appID . "/domains/" . $domainID . "/flush", $tmp);
 
         return $result;
