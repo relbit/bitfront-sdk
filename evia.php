@@ -1089,11 +1089,21 @@ class Evia {
      *
      * @param int $appID ID of the parent app
      * @param int $domainID name of the new domain
-     * @param string $DNSname name for host
-     * @param string $DNSttl time to live
-     * @param string $DNSrtype record type [A, AAAA, MX, CNAME, NS, TXT, SRV]
-     * @param string $DNSdata record data
-     * @return string Returns cURL response, or throws an exception
+     * @param array $records
+     *   array(
+     *           0 => array(
+     *                   "name"  => "auto",
+     *                   "ttl"   => 3600,
+     *                   "rtype" => "A",
+     *                   "data"  => "10.1.1.1"
+     *           ),
+     *           1 => array(
+     *                   "name"  => "autobus",
+     *                   "ttl"   => 3600,
+     *                   "rtype" => "A",
+     *                   "data"  => "10.1.1.2"
+     *           )
+     *   );
      * @throws HttpError401Exception
      * @throws HttpError404Exception
      * @throws HttpError422Exception
@@ -1102,13 +1112,15 @@ class Evia {
      * @throws CurlErrorException
      * @throws GenericException
      */
-    function addDNS($appID, $domainID, $DNSname, $DNSttl, $DNSrtype, $DNSdata){
-        $data = array(
-            "records[0][name]" =>   $DNSname,
-            "records[0][ttl]" =>    $DNSttl,
-            "records[0][rtype]" =>  $DNSrtype,
-            "records[0][data]" =>   $DNSdata
-        );
+    function addDNS($appID, $domainID, $records){
+        $data = array();
+
+        foreach($records as $id => $r) {
+                $data["records[$id][name]"]  = $r["name"];
+                $data["records[$id][ttl]"]   = $r["ttl"];
+                $data["records[$id][rtype]"] = $r["rtype"];
+                $data["records[$id][data]"]  = $r["data"];
+        }
 
         $result = $this->post("apps/" . $appID . "/domains/" . $domainID . "/records", $data);
 
@@ -1207,10 +1219,10 @@ class Evia {
      */
     function updateDNS($appID, $domainID, $DNSID,  $DNSname, $DNSttl, $DNSrtype, $DNSdata){
         $data = array(
-            "records[0][name]" =>   $DNSname,
-            "records[0][ttl]" =>    $DNSttl,
-            "records[0][rtype]" =>  $DNSrtype,
-            "records[0][data]" =>   $DNSdata
+            "record[name]" =>   $DNSname,
+            "record[ttl]" =>    $DNSttl,
+            "record[rtype]" =>  $DNSrtype,
+            "record[data]" =>   $DNSdata
         );
         $result = $this->put("apps/" . $appID . "/domains/" . $domainID . "/records/" . $DNSID, $data);
 
