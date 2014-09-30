@@ -1061,6 +1061,24 @@ class Evia {
     }
 
     /**
+     * Flushes the varnish addon ~> whole varnish cache of all apps.
+     *
+     * @return string Returns cURL response, or throws an exception
+     * @throws HttpError401Exception
+     * @throws HttpError404Exception
+     * @throws HttpError422Exception
+     * @throws HttpError500Exception
+     * @throws HttpError503Exception
+     * @throws CurlErrorException
+     * @throws GenericException
+     */
+    function flushVarnishAddon(){
+        $result = $this->get("vns/flush");
+
+        return $result;
+    }
+
+    /**
      * Deletes a domain.
      *
      * Deletes a domain with ID $domainID of an app with ID $appID, or throws an exception.
